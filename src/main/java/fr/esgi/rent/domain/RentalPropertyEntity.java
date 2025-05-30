@@ -1,5 +1,6 @@
 package fr.esgi.rent.domain;
 
+import fr.esgi.rent.dto.RentalPropertyCreateDto;
 import jakarta.persistence.*;
 
 import java.util.UUID;
@@ -46,6 +47,28 @@ public class RentalPropertyEntity {
     private boolean hasBalcony;
     @Column(name = "has_parking_space")
     private boolean hasParkingSpace;
+
+
+    public RentalPropertyEntity(RentalPropertyCreateDto dto) {
+        this.description = dto.getDescription();
+        this.town = dto.getTown();
+        this.address = dto.getAddress();
+        this.rentAmount = dto.getRentAmount();
+        this.securityDepositAmount = dto.getSecurityDepositAmount();
+        this.area = dto.getArea();
+        this.numberOfBedrooms = dto.getNumberOfBedrooms();
+        this.floorNumber = dto.getFloorNumber();
+        this.numberOfFloors = dto.getNumberOfFloors();
+        this.constructionYear = dto.getConstructionYear();
+        this.hasElevator = dto.isHasElevator();
+        this.hasIntercom = dto.isHasIntercom();
+        this.hasBalcony = dto.isHasBalcony();
+        this.hasParkingSpace = dto.isHasParkingSpace();
+    }
+
+    public RentalPropertyEntity() {
+
+    }
 
     public UUID getId() {
         return id;
