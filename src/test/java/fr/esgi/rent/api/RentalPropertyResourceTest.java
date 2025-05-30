@@ -1,7 +1,12 @@
 package fr.esgi.rent.api;
 
+import fr.esgi.rent.domain.EnergyClassificationEntity;
+import fr.esgi.rent.domain.PropertyTypeEntity;
 import fr.esgi.rent.domain.RentalPropertyEntity;
+import fr.esgi.rent.dto.RentalPropertyCreateDto;
 import fr.esgi.rent.dto.RentalPropertyDto;
+import fr.esgi.rent.repository.EnergyClassificationRepository;
+import fr.esgi.rent.repository.PropertyTypeRepository;
 import fr.esgi.rent.repository.RentalPropertyRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,12 +21,19 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 public class RentalPropertyResourceTest {
 
     @Mock
     private RentalPropertyRepository rentalPropertyRepository;
+
+    @Mock
+    private PropertyTypeRepository propertyTypeRepository;
+
+    @Mock
+    private EnergyClassificationRepository energyClassificationRepository;
 
     @InjectMocks
     private RentalPropertyResource rentalPropertyResource;
@@ -105,4 +117,92 @@ public class RentalPropertyResourceTest {
 
         Assertions.assertNull(result);
     }
+
+    @Test
+    @DisplayName("POST crée une location avec types valides")
+    void testCreateRentalProperty_shouldReturnDto() {
+        UUID propertyTypeId = UUID.randomUUID();
+        UUID energyId = UUID.randomUUID();
+
+        RentalPropertyCreateDto dto = new RentalPropertyCreateDto();
+        dto.setDescription("Appartement neuf");
+        dto.setTown("Toulouse");
+        dto.setAddress("31 avenue de la République");
+        dto.setRentAmount(900);
+        dto.setSecurityDepositAmount(1800);
+        dto.setArea(50);
+        dto.setNumberOfBedrooms((byte) 1);
+        dto.setFloorNumber((short) 2);
+        dto.setNumberOfFloors((short) 4);
+        dto.setConstructionYear((short) 2020);
+        dto.setHasBalcony(true);
+        dto.setHasElevator(true);
+        dto.setHasIntercom(false);
+        dto.setHasParkingSpace(true);
+        dto.setPropertyTypeId(propertyTypeId);
+        dto.setEnergyClassificationId(energyId);
+
+        PropertyTypeEntity propertyType = new PropertyTypeEntity();
+        propertyType.setId(propertyTypeId);
+        propertyType.setDesignation("Appartement");
+
+        EnergyClassificationEntity energy = new EnergyClassificationEntity();
+        energy.setId(energyId);
+        energy.setDesgination("A");
+
+        RentalPropertyEntity savedEntity = new RentalPropertyEntity(dto);
+        savedEntity.setId(UUID.randomUUID());
+        savedEntity.setPropertyType(propertyType);
+        savedEntity.setEnergyClassification(energy);
+
+        when(propertyTypeRepository.findById(propertyTypeId)).thenReturn(Optional.of(propertyType));
+        when(energyClassificationRepository.findById(energyId)).thenReturn(Optional.of(energy));
+        when(rentalPropertyRepository.save(any())).thenReturn(savedEntity);
+
+        RentalPropertyDto result = rentalPropertyResource.createRentalProperty(dto);
+
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals("Appartement neuf", result.getDescription());
+        Assertions.assertEquals("Toulouse", result.getTown());
+        Assertions.assertEquals("31 avenue de la République", result.getAddress());
+        Assertions.assertTrue(result.isHasBalcony());
+        Assertions.assertEquals(50, result.getArea());
+    }
+
+    @Test
+    @DisplayName("POST retourne null si propertyTypeId introuvable")
+    void testCreateRentalProperty_shouldReturnNull_ifInvalidPropertyTypeId() {
+        RentalPropertyCreateDto dto = new RentalPropertyCreateDto();
+        dto.setPropertyTypeId(UUID.randomUUID());
+        dto.setEnergyClassificationId(UUID.randomUUID());
+
+        when(propertyTypeRepository.findById(dto.getPropertyTypeId())).thenReturn(Optional.empty());
+
+        RentalPropertyDto result = rentalPropertyResource.createRentalProperty(dto);
+
+        Assertions.assertNull(result);
+    }
+
+    @Test
+    @DisplayName("POST retourne null si energyClassificationId introuvable")
+    void testCreateRentalProperty_shouldReturnNull_ifInvalidEnergyClassificationId() {
+        UUID validPropertyTypeId = UUID.randomUUID();
+        UUID invalidEnergyId = UUID.randomUUID();
+
+        PropertyTypeEntity propertyType = new PropertyTypeEntity();
+        propertyType.setId(validPropertyTypeId);
+        propertyType.setDesignation("Maison");
+
+        RentalPropertyCreateDto dto = new RentalPropertyCreateDto();
+        dto.setPropertyTypeId(validPropertyTypeId);
+        dto.setEnergyClassificationId(invalidEnergyId);
+
+        when(propertyTypeRepository.findById(validPropertyTypeId)).thenReturn(Optional.of(propertyType));
+        when(energyClassificationRepository.findById(invalidEnergyId)).thenReturn(Optional.empty());
+
+        RentalPropertyDto result = rentalPropertyResource.createRentalProperty(dto);
+        
+        Assertions.assertNull(result);
+    }
+
 }

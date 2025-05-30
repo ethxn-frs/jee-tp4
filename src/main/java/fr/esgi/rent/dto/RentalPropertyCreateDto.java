@@ -1,82 +1,27 @@
-package fr.esgi.rent.domain;
-
-import fr.esgi.rent.dto.RentalPropertyCreateDto;
-import jakarta.persistence.*;
+package fr.esgi.rent.dto;
 
 import java.util.UUID;
 
-@Entity
-@Table(name = "rental_property")
-public class RentalPropertyEntity {
-    @GeneratedValue
-    @Id
-    @Column(name = "id")
-    private UUID id;
-    @Column(name = "description")
-    private String description;
-    @Column(name = "town")
-    private String town;
-    @Column(name = "address")
-    private String address;
-    @ManyToOne
-    @JoinColumn(name = "property_type_id")
-    private PropertyTypeEntity propertyType;
-    @Column(name = "rent_amount")
-    private double rentAmount;
-    @Column(name = "security_deposit_amount")
-    private double securityDepositAmount;
-    @Column(name = "area")
-    private double area;
-    @Column(name = "number_of_bedrooms")
-    private byte numberOfBedrooms;
+public class RentalPropertyCreateDto {
 
-    @Column(name = "floor_number")
+    private String description;
+    private String town;
+    private String address;
+    private double rentAmount;
+    private double securityDepositAmount;
+    private double area;
+    private byte numberOfBedrooms;
     private Short floorNumber;
-    @Column(name = "number_of_floors")
     private Short numberOfFloors;
-    @Column(name = "construction_year")
     private short constructionYear;
-    @ManyToOne
-    @JoinColumn(name = "energy_classification_id")
-    private EnergyClassificationEntity energyClassification;
-    @Column(name = "has_elevator")
     private boolean hasElevator;
-    @Column(name = "has_intercom")
     private boolean hasIntercom;
-    @Column(name = "has_balcony")
     private boolean hasBalcony;
-    @Column(name = "has_parking_space")
     private boolean hasParkingSpace;
 
+    private UUID propertyTypeId;
+    private UUID energyClassificationId;
 
-    public RentalPropertyEntity(RentalPropertyCreateDto dto) {
-        this.description = dto.getDescription();
-        this.town = dto.getTown();
-        this.address = dto.getAddress();
-        this.rentAmount = dto.getRentAmount();
-        this.securityDepositAmount = dto.getSecurityDepositAmount();
-        this.area = dto.getArea();
-        this.numberOfBedrooms = dto.getNumberOfBedrooms();
-        this.floorNumber = dto.getFloorNumber();
-        this.numberOfFloors = dto.getNumberOfFloors();
-        this.constructionYear = dto.getConstructionYear();
-        this.hasElevator = dto.isHasElevator();
-        this.hasIntercom = dto.isHasIntercom();
-        this.hasBalcony = dto.isHasBalcony();
-        this.hasParkingSpace = dto.isHasParkingSpace();
-    }
-
-    public RentalPropertyEntity() {
-
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
 
     public String getDescription() {
         return description;
@@ -100,14 +45,6 @@ public class RentalPropertyEntity {
 
     public void setAddress(String address) {
         this.address = address;
-    }
-
-    public PropertyTypeEntity getPropertyType() {
-        return propertyType;
-    }
-
-    public void setPropertyType(PropertyTypeEntity propertyType) {
-        this.propertyType = propertyType;
     }
 
     public double getRentAmount() {
@@ -142,6 +79,22 @@ public class RentalPropertyEntity {
         this.numberOfBedrooms = numberOfBedrooms;
     }
 
+    public UUID getPropertyTypeId() {
+        return propertyTypeId;
+    }
+
+    public void setPropertyTypeId(UUID propertyTypeId) {
+        this.propertyTypeId = propertyTypeId;
+    }
+
+    public UUID getEnergyClassificationId() {
+        return energyClassificationId;
+    }
+
+    public void setEnergyClassificationId(UUID energyClassificationId) {
+        this.energyClassificationId = energyClassificationId;
+    }
+
     public Short getFloorNumber() {
         return floorNumber;
     }
@@ -164,14 +117,6 @@ public class RentalPropertyEntity {
 
     public void setConstructionYear(short constructionYear) {
         this.constructionYear = constructionYear;
-    }
-
-    public EnergyClassificationEntity getEnergyClassification() {
-        return energyClassification;
-    }
-
-    public void setEnergyClassification(EnergyClassificationEntity energyClassification) {
-        this.energyClassification = energyClassification;
     }
 
     public boolean isHasElevator() {
