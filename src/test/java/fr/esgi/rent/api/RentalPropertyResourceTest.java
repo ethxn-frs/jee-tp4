@@ -13,6 +13,7 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.mockito.Mockito.when;
@@ -80,5 +81,28 @@ public class RentalPropertyResourceTest {
         });
 
         Assertions.assertEquals("Échec de la base de données", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("GET by ID retourne un DTO si trouvé")
+    void testGetRentalPropertyById_shouldReturnDto() {
+        UUID id = testProperty.getId();
+        when(rentalPropertyRepository.findById(id)).thenReturn(Optional.of(testProperty));
+
+        RentalPropertyDto result = rentalPropertyResource.getRentalPropertyById(id);
+
+        Assertions.assertEquals("Loft spacieux avec vue mer", result.getDescription());
+        Assertions.assertEquals("Nice", result.getTown());
+    }
+
+    @Test
+    @DisplayName("GET by ID retourne null si non trouvé")
+    void testGetRentalPropertyById_shouldReturn404() {
+        UUID id = UUID.randomUUID();
+        when(rentalPropertyRepository.findById(id)).thenReturn(Optional.empty());
+
+        RentalPropertyDto result = rentalPropertyResource.getRentalPropertyById(id);
+
+        Assertions.assertNull(result);
     }
 }
