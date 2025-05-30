@@ -1,6 +1,7 @@
 package fr.esgi.rent.api;
 
 import fr.esgi.rent.domain.RentalPropertyEntity;
+import fr.esgi.rent.dto.RentalPropertyDto;
 import fr.esgi.rent.repository.RentalPropertyRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,16 +42,21 @@ public class RentalPropertyResourceTest {
     }
 
     @Test
-    @DisplayName("Retourne une liste contenant un bien")
-    void testGetRentalProperties_shouldReturnList() {
+    @DisplayName("Retourne une liste contenant un bien (DTO)")
+    void testGetRentalProperties_shouldReturnListOfDto() {
         when(rentalPropertyRepository.findAll()).thenReturn(List.of(testProperty));
 
-        List<RentalPropertyEntity> result = rentalPropertyResource.getRentalProperties();
+        List<RentalPropertyDto> result = rentalPropertyResource.getRentalProperties();
 
         Assertions.assertEquals(1, result.size());
-        Assertions.assertEquals("Loft spacieux avec vue mer", result.getFirst().getDescription());
-        Assertions.assertEquals("Nice", result.getFirst().getTown());
-        Assertions.assertEquals("8 avenue du Port", result.getFirst().getAddress());
+        RentalPropertyDto dto = result.get(0);
+        Assertions.assertEquals("Loft spacieux avec vue mer", dto.getDescription());
+        Assertions.assertEquals("Nice", dto.getTown());
+        Assertions.assertEquals("8 avenue du Port", dto.getAddress());
+        Assertions.assertEquals(1250.50, dto.getRentAmount());
+        Assertions.assertEquals(2500.00, dto.getSecurityDepositAmount());
+        Assertions.assertEquals(72.5, dto.getArea());
+        Assertions.assertEquals(2, dto.getNumberOfBedrooms());
     }
 
     @Test
@@ -58,7 +64,7 @@ public class RentalPropertyResourceTest {
     void testGetRentalProperties_shouldReturnEmptyList() {
         when(rentalPropertyRepository.findAll()).thenReturn(Collections.emptyList());
 
-        List<RentalPropertyEntity> result = rentalPropertyResource.getRentalProperties();
+        List<RentalPropertyDto> result = rentalPropertyResource.getRentalProperties();
 
         Assertions.assertNotNull(result);
         Assertions.assertTrue(result.isEmpty());
