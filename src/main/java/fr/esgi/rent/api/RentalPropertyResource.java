@@ -3,9 +3,11 @@ package fr.esgi.rent.api;
 import fr.esgi.rent.domain.RentalPropertyEntity;
 import fr.esgi.rent.dto.RentalPropertyCreateDto;
 import fr.esgi.rent.dto.RentalPropertyDto;
+import fr.esgi.rent.dto.RentalPropertySearchRequest;
 import fr.esgi.rent.repository.EnergyClassificationRepository;
 import fr.esgi.rent.repository.PropertyTypeRepository;
 import fr.esgi.rent.repository.RentalPropertyRepository;
+import fr.esgi.rent.services.VelibStationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,6 +27,9 @@ public class RentalPropertyResource {
 
     @Autowired
     private EnergyClassificationRepository energyClassificationRepository;
+
+    @Autowired
+    private VelibStationService velibStationService;
 
     @GetMapping("/rental-properties")
     public List<RentalPropertyDto> getRentalProperties() {
@@ -55,5 +60,28 @@ public class RentalPropertyResource {
         }
 
         return new RentalPropertyDto(rentalPropertyRepository.save(entity));
+    }
+
+    @PostMapping("/rental-properties/search")
+    public List<RentalPropertyDto> searchRentalProperties(@RequestBody RentalPropertySearchRequest request) {
+        if (Boolean.TRUE.equals(request.getNearVelibStations())) {
+            List<RentalPropertyEntity> allProperties = rentalPropertyRepository.findAll();
+            List<String> allTowns = allProperties.stream()
+                    .map(RentalPropertyEntity::getTown)
+                    .distinct()
+                    .collect(Collectors.toList());
+
+            List<String> townsWithVelib = velibStationService.getVelibTowns(allTowns);
+
+            return allProperties.stream()
+                    .filter(p -> townsWithVelib.contains(p.getTown()))
+                    .map(RentalPropertyDto::new)
+                    .collect(Collectors.toList());
+        }
+
+        return rentalPropertyRepository.findAll()
+                .stream()
+                .map(RentalPropertyDto::new)
+                .collect(Collectors.toList());
     }
 }
