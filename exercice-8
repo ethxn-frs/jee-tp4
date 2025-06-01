@@ -1,0 +1,94 @@
+1.
+
+Le paramètre cascade permet de propager des opérations (persist, merge, remove, )
+de l'entité parent vers l'entité enfant.
+
+@ManyToOne(cascade = CascadeType.PERSIST)
+private PropertyTypeEntity propertyType;
+
+on sauvegarde une RentalPropertyEntity, si son propertyType n’est pas encore présent en base,
+il sera inséré grâce à CascadeType.PERSIST
+
+
+2.
+
+auto-configuration de Spring Boot.
+
+ - Fonctionne grâce à l’annotation @SpringBootApplication
+
+ - Analyse les dépendances présentes (spring-boot-starter-data-jpa) et les propriétés application.properties
+
+ - Configure automatiquement un DataSource, un EntityManagerFactory, un JpaTransactionManager, etc.
+
+
+
+3.
+
+En Spring Boot, on lance la méthode main() et l’application embarque un Tomcat intégré (comme un .jar)
+
+En JEE, on génère un .war qu’on déploie manuellement dans un serveur Tomcat externe.
+
+
+4.
+
+@Component ou @Service (sur la classe cilbe)
+
+@Autowired (sur le constructeur )
+
+5.
+
+Il s'agit de @Valid appliquée sur le paramètre du contrôleur :
+
+@PostMapping("/rental-properties")
+public RentalPropertyDto create(@RequestBody @Valid RentalPropertyCreateDto dto)
+
+6.
+
+Pour un RestTemplate ou HttpClient, on utilise généralement :
+
+- @Component sur la classe
+
+- @Autowired sur le constructeur
+
+Exemple :
+
+@Component
+public class VelibStationClient {
+    private final RestTemplate restTemplate;
+
+    @Autowired
+    public VelibStationClient(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
+}
+
+On déclare aussi le bean globalement :
+
+@Bean
+public RestTemplate restTemplate() {
+    return new RestTemplate();
+}
+
+7.
+
+C’est l’annotation :
+- @Value (champ par champ)
+- @ConfigurationProperties (pour une classe).
+
+Exemples :
+
+ - Avec @Value :
+
+@Value("${server.port}")
+private int port;
+
+
+ -Avec @ConfigurationProperties :
+
+@ConfigurationProperties(prefix = "my.custom")
+public class MyConfig {
+    private String endpoint;
+    private int timeout;
+}
+
+Et on ajoute @EnableConfigurationProperties(MyConfig.class).
