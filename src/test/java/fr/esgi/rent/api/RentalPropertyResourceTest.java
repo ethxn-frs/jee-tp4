@@ -5,9 +5,11 @@ import fr.esgi.rent.domain.PropertyTypeEntity;
 import fr.esgi.rent.domain.RentalPropertyEntity;
 import fr.esgi.rent.dto.RentalPropertyCreateDto;
 import fr.esgi.rent.dto.RentalPropertyDto;
+import fr.esgi.rent.dto.RentalPropertySearchRequest;
 import fr.esgi.rent.repository.EnergyClassificationRepository;
 import fr.esgi.rent.repository.PropertyTypeRepository;
 import fr.esgi.rent.repository.RentalPropertyRepository;
+import fr.esgi.rent.services.VelibStationService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -39,6 +41,9 @@ public class RentalPropertyResourceTest {
     private RentalPropertyResource rentalPropertyResource;
 
     private RentalPropertyEntity testProperty;
+
+    @Mock
+    private VelibStationService velibStationService;
 
     @BeforeEach
     void setUp() {
@@ -201,8 +206,55 @@ public class RentalPropertyResourceTest {
         when(energyClassificationRepository.findById(invalidEnergyId)).thenReturn(Optional.empty());
 
         RentalPropertyDto result = rentalPropertyResource.createRentalProperty(dto);
-        
+
         Assertions.assertNull(result);
+    }
+
+    @Test
+    @DisplayName("POST /search avec nearVelibStations=false retourne tous les biens")
+    void testSearchRentalProperties_withoutFilter_returnsAll() {
+        when(rentalPropertyRepository.findAll()).thenReturn(List.of(testProperty));
+
+        RentalPropertySearchRequest request = new RentalPropertySearchRequest();
+        request.setNearVelibStations(false);
+
+        List<RentalPropertyDto> result = rentalPropertyResource.searchRentalProperties(request);
+
+        Assertions.assertEquals(1, result.size());
+        Assertions.assertEquals("Nice", result.get(0).getTown());
+    }
+
+    @Test
+    @DisplayName("POST /search avec nearVelibStations=true retourne que les biens dans les villes Vélib")
+    void testSearchRentalProperties_withFilter_returnsOnlyMatchingTowns() {
+        RentalPropertyEntity otherProperty = new RentalPropertyEntity();
+        otherProperty.setId(UUID.randomUUID());
+        otherProperty.setTown("Paris");
+
+        when(rentalPropertyRepository.findAll()).thenReturn(List.of(testProperty, otherProperty));
+        when(velibStationService.getVelibTowns(List.of("Nice", "Paris"))).thenReturn(List.of("Nice"));
+
+        RentalPropertySearchRequest request = new RentalPropertySearchRequest();
+        request.setNearVelibStations(true);
+
+        List<RentalPropertyDto> result = rentalPropertyResource.searchRentalProperties(request);
+
+        Assertions.assertEquals(1, result.size());
+        Assertions.assertEquals("Nice", result.get(0).getTown());
+    }
+
+    @Test
+    @DisplayName("POST /search avec nearVelibStations=true retourne liste vide si aucune ville ne correspond")
+    void testSearchRentalProperties_withFilter_noMatch() {
+        when(rentalPropertyRepository.findAll()).thenReturn(List.of(testProperty));
+        when(velibStationService.getVelibTowns(List.of("Nice"))).thenReturn(List.of());
+
+        RentalPropertySearchRequest request = new RentalPropertySearchRequest();
+        request.setNearVelibStations(true);
+
+        List<RentalPropertyDto> result = rentalPropertyResource.searchRentalProperties(request);
+
+        Assertions.assertTrue(result.isEmpty());
     }
 
 }
